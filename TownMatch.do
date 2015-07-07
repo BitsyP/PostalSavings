@@ -4,6 +4,7 @@
 
 *set mem 1g
 
+/*
 clear all
 *Grab the post office data and read it in
 insheet using "C:\Users\bitsy\Dropbox\RFD Papers\Postal Savings\Data files\TownMatch\postalsaving_towns_to_match.csv", comma names
@@ -14,21 +15,57 @@ replace state_alpha = trim(itrim(state_alpha))
 replace feature_name = trim(itrim(feature_name))
 
 save "C:\Users\bitsy\Dropbox\RFD Papers\Postal Savings\Data files\TownMatch\postalsaving_towns_to_match.dta", replace
-
+*/
 
 
 
 *This procedure makes matches from the All Names file.
 *There will be three files "good" matches, duplicate matches, and non matched.
-* The US Board on Geographic Names classifies place into types (e.g. lake, monument).
+*The US Board on Geographic Names classifies place into types (e.g. lake, monument).
 *Because the file is so large, I chop it up into feature classes for each merge and then append any matches back together.
 
 cd "C:\Users\bitsy\Dropbox\RFD Papers\Postal Savings\Data files\TownMatch\"
-*"Airport" "Arch"  "Area"  "Arroyo"  "Bar"  "Basin"  "Bay"  "Beach"  "Bench" "Bend"  "Bridge"  "Building"  "Canal"  "Cape"  "Cemetery"  "Census"  "Channel" "Church"  "Civil"  "Cliff"  "Crater"  "Crossing"  "Dam"  "Falls"  "Flat" "Forest"  "Gap"  "Glacier"  "Gut"  "Harbor"  "Hospital"  "Island"  "Isthmus"  "Lake"  "Lava"  "Levee"  "Locale"  "Military"  "Mine"  "Oilfield"  "Park"  "Pillar"  "Plain"  "Populated Place"    "Range"  "Rapids"  "Reserve"  "Reservoir"  "Ridge"  "School"  "Sea"  "Slope"  "Spring"  "Stream"  "Summit"  "Swamp"  "Tower"  "Trail"  "Tunnel"  "Unknown"  "Valley"  "Well"  "Woods" 
-foreach feature_class in "Post Office" {
+
+
+*Start with most likely classes
+*Post Offices
+use "C:\Users\bitsy\Dropbox\RFD Papers\Postal Savings\Data files\TownMatch\NationalFile_AllNames.dta", clear
+keep if  feature_class=="Post Office"
+
+rename feature_name store_feature_name
+replace store_feature_name = feature_name_official if store_feature_name==""
+
+gen feature_name = regexr(store_feature_name,"( ?)((P|p)(O|o)(so?t|ts|t) (O|o)(F|f)+(i?ci?e|ie)|P.( ?)O.)","")
+
+drop if  feature_name==""
+
+joinby state_alpha feature_name using "C:\Users\bitsy\Dropbox\RFD Papers\Postal Savings\Data files\TownMatch\postalsaving_towns_to_match.dta", update unmatched(both) _merge(_merge)
+
+*Go through by hand and correct what I can.
+
+use "C:\Users\bitsy\Dropbox\RFD Papers\Postal Savings\Data files\TownMatch\NationalFile_AllNames.dta", clear
+keep if  feature_class=="Populated Place"
+
+rename feature_name store_feature_name
+replace store_feature_name = feature_name_official if store_feature_name==""
+gen feature_name = store_feature_name
+
+drop if  feature_name==""
+
+*joinby state_alpha feature_name using "", update unmatched(both) _merge(_merge)
+
+*"Civil" 
+
+/*
+*"Airport" "Arch"  "Area"  "Arroyo"  "Bar"  "Basin"  "Bay"  "Beach"  "Bench" "Bend"  "Bridge"  "Building"  "Canal"  "Cape"  "Cemetery"  "Census"  "Channel" "Church"  "Civil"  "Cliff"  "Crater"  "Crossing"  "Dam"  "Falls"  "Flat" "Forest"  "Gap"  "Glacier"  "Gut"  "Harbor"  "Hospital"  "Island"  "Isthmus"  "Lake"  "Lava"  "Levee"  "Locale"  "Military"  "Mine"  "Oilfield"  "Park"  "Pillar"  "Plain"  "Populated Place"  "Post Office"  "Range"  "Rapids"  "Reserve"  "Reservoir"  "Ridge"  "School"  "Sea"  "Slope"  "Spring"  "Stream"  "Summit"  "Swamp"  "Tower"  "Trail"  "Tunnel"  "Unknown"  "Valley"  "Well"  "Woods" 
+foreach feature_class in  {
 
 use "C:\Users\bitsy\Dropbox\RFD Papers\Postal Savings\Data files\TownMatch\NationalFile_AllNames.dta", clear
 keep if  feature_class=="`feature_class'"
+
+gen test_feature_name = name if regexm(name," Post Office")==0
+replace test_feature_name = substr(name, 1, strpos(name, "  Post Office")) if regexm(name,"  Post Office")!=0
+
 
 drop if  feature_name==""
 
@@ -60,7 +97,7 @@ duplicates drop
 drop if  feature_name=="Mount Morris" &  feature_class=="Summit"
 compress
 save NationalFile_AllNames_Matches.dta, replace
-
+*/
 
 *Place names from AniMapPlaces
 
