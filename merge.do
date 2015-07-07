@@ -57,7 +57,7 @@ merge 1:1 ID2 using merge.dta
 *3 obs didn't merge. 2 are Paia, HI. These commands fix that
 replace  nhgisst=155 if  feature_id==362968
 replace   nhgiscty=95 if  feature_id==362968
-replace    icpsrst=82 if  feature_id==362968
+replace    icpsrst="82" if  feature_id==362968
 *this drops the redundent Paia
 drop if _merge ==1
 /*the other is Nargansette Pier, RI. It was and is 
@@ -65,7 +65,7 @@ in Washtington County, as the only changes were the switch of
 Block Island into Washington County*/
 replace  nhgisst=440 if  feature_id==1219895
 replace   nhgiscty=50 if  feature_id==1219895
-replace    icpsrst=5 if  feature_id==1219895
+replace    icpsrst="5" if  feature_id==1219895
 drop _merge var15
 
 egen ID3 = concat( icpsrst county_numeric), punc(-)
